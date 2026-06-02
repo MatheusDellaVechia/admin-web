@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { RegisterService } from '../services/register.service';
 
 @Component({
   selector: 'app-register',
@@ -14,8 +15,14 @@ export class RegisterComponent {
   step = 1;
   registrationForm: FormGroup;
   successMessage = false;
+  errorMessage = '';
+  isSubmitting = false;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private registerService: RegisterService
+  ) {
     this.registrationForm = this.fb.group({
       // Step 1
       name: ['', Validators.required],
@@ -50,11 +57,30 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registrationForm.valid) {
-      console.log('Registration submitted:', this.registrationForm.value);
-      this.successMessage = true;
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 3000);
+      this.isSubmitting = true;
+      this.errorMessage = '';
+     
+      let request = {
+        name: this.registrationForm.get('name')?.value,
+        email: this.registrationForm.get('email')?.value,
+        password: this.registrationForm.get('password')?.value
+      };
+
+      this.registerService.register(request).subscribe({
+        next: (response) => {
+          console.log('Registration successful:', response);
+          this.successMessage = true;
+          this.isSubmitting = false;
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 3000);
+        },
+        error: (error) => {
+          console.error('Registration failed:', error);
+          this.errorMessage = 'Erro ao realizar o cadastro. Tente novamente mais tarde.';
+          this.isSubmitting = false;
+        }
+      });
     } else {
       this.registrationForm.markAllAsTouched();
     }
