@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -17,19 +17,19 @@ export class RegisterComponent {
   successMessage = false;
   errorMessage = '';
   isSubmitting = false;
+  verificationCodeSent = false;
+  codeValidated = false;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private registerService: RegisterService
+    private registerService: RegisterService,
+    private cdr: ChangeDetectorRef
   ) {
     this.registrationForm = this.fb.group({
-      // Step 1
-      name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      birthDate: ['', Validators.required],
-      // Step 2
-      verificationCode: ['', Validators.required],
+      verificationCode: ['', [Validators.required, Validators.minLength(6)]],
+      name: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
     }, { validator: this.passwordMatchValidator });
@@ -40,30 +40,80 @@ export class RegisterComponent {
       ? null : { 'mismatch': true };
   }
 
-  nextStep() {
-    const step1Fields = ['name', 'email', 'birthDate'];
-    let step1Valid = true;
+  sendVerificationCode() {
+    const emailControl = this.registrationForm.get('email');
+    emailControl?.markAsTouched();
     
-    step1Fields.forEach(field => {
-      const control = this.registrationForm.get(field);
-      control?.markAsTouched();
-      if (control?.invalid) step1Valid = false;
-    });
+    if (emailControl?.valid) {
+      this.isSubmitting = true;
+      this.errorMessage = '';
+      
+      this.registerService.sendVerificationCode(emailControl.value).subscribe({
+        next: (response) => {
+          console.log('Verification code sent:', response);
+          this.verificationCodeSent = true;
+          this.step = 2;
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to send verification code:', error);
+          this.errorMessage = error.error?.message || 'Erro ao enviar código de verificação. Tente novamente.';
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
 
-    if (step1Valid) {
-      this.step = 2;
+  validateCode() {
+    const codeControl = this.registrationForm.get('verificationCode');
+    codeControl?.markAsTouched();
+    
+    if (codeControl?.valid) {
+      this.isSubmitting = true;
+      this.errorMessage = '';
+      
+      const email = this.registrationForm.get('email')?.value;
+      const code = codeControl.value;
+      
+      this.registerService.validateVerificationCode(email, code).subscribe({
+        next: (response) => {
+          console.log('Code validated:', response);
+          this.codeValidated = true;
+          this.step = 3;
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Invalid verification code:', error);
+          this.errorMessage = error.error?.message || 'Código de verificação inválido.';
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+        }
+      });
     }
   }
 
   onSubmit() {
-    if (this.registrationForm.valid) {
+    const step3Fields = ['name', 'password', 'confirmPassword'];
+    let step3Valid = true;
+    
+    step3Fields.forEach(field => {
+      const control = this.registrationForm.get(field);
+      control?.markAsTouched();
+      if (control?.invalid) step3Valid = false;
+    });
+
+    if (step3Valid && !this.registrationForm.hasError('mismatch')) {
       this.isSubmitting = true;
       this.errorMessage = '';
      
       let request = {
-        name: this.registrationForm.get('name')?.value,
         email: this.registrationForm.get('email')?.value,
-        password: this.registrationForm.get('password')?.value
+        name: this.registrationForm.get('name')?.value,
+        password: this.registrationForm.get('password')?.value,
+        verificationCode: this.registrationForm.get('verificationCode')?.value
       };
 
       this.registerService.register(request).subscribe({
@@ -71,14 +121,16 @@ export class RegisterComponent {
           console.log('Registration successful:', response);
           this.successMessage = true;
           this.isSubmitting = false;
+          this.cdr.detectChanges();
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000);
         },
         error: (error) => {
           console.error('Registration failed:', error);
-          this.errorMessage = 'Erro ao realizar o cadastro. Tente novamente mais tarde.';
+          this.errorMessage = error.error?.message || 'Erro ao realizar o cadastro. Tente novamente mais tarde.';
           this.isSubmitting = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -88,5 +140,13 @@ export class RegisterComponent {
 
   goToStep1() {
     this.step = 1;
+  }
+
+  goToStep2() {
+    this.step = 2;
+  }
+
+  resendCode() {
+    this.sendVerificationCode();
   }
 }

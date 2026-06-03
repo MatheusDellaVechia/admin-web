@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -20,7 +20,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -42,16 +43,23 @@ export class LoginComponent {
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.successMessage = `Bem-vindo, ${response.name}!`;
-          console.log('Login bem-sucedido:', response);
+
+          localStorage.setItem('user', JSON.stringify({
+            email: response.email,
+            name: response.name
+          }));
           
-          // Redirecionar para uma página principal após o login
-          // setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+          this.cdr.detectChanges();
+          
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 1000);
         },
         error: (error) => {
           this.isLoading = false;
           this.errorMessage = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
           console.error('Erro no login:', error);
+          this.cdr.detectChanges();
         }
       });
     } else {

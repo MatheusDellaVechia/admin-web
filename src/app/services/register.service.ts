@@ -11,7 +11,15 @@ export class RegisterService {
 
   constructor(private http: HttpClient) {}
 
-  register(userData: any): Observable<any> {
+  sendVerificationCode(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/send-verification-code`, { email });
+  }
+
+  validateVerificationCode(email: string, code: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/validate-verification-code`, { email, code });
+  }
+
+  register(userData: { email: string, name: string, password: string, verificationCode: string }): Observable<any> {
     return this.http.post(this.apiUrl, userData);
   }
 }
