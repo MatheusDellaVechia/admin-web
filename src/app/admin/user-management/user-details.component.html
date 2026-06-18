@@ -1,0 +1,170 @@
+<div class="user-details-container">
+  <div class="header">
+    <a routerLink="/admin/users" class="back-link">← Voltar para lista</a>
+    <h1>Detalhes do Usuário</h1>
+  </div>
+
+  <!-- Success message -->
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    Carregando detalhes do usuário...
+  </div>
+
+  <!-- User details -->
+  <div *ngIf="!loading && user" class="user-details-content">
+    <!-- User info card -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Informações Básicas</h2>
+        <span [class]="getUserStatusClass(user.active)" class="status-badge-large">
+          {{ getUserStatusText(user.active) }}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-label">Nome:</span>
+          <span class="info-value">{{ user.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{ user.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Data de Criação:</span>
+          <span class="info-value">{{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roles card -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Papéis e Permissões</h2>
+        <button 
+          *hasPermission="'ROLE_ASSIGNMENT'"
+          (click)="openRoleModal()" 
+          class="btn btn-primary btn-sm"
+          [disabled]="actionLoading"
+        >
+          Gerenciar Papéis
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <h3>Papéis Atribuídos:</h3>
+          <div class="roles-list" *ngIf="user.roles.length > 0">
+            <div *ngFor="let role of user.roles" class="role-item">
+              <strong>{{ role.name }}</strong>
+              <p class="role-description">{{ role.description }}</p>
+            </div>
+          </div>
+          <p *ngIf="user.roles.length === 0" class="text-muted">
+            Nenhum papel atribuído
+          </p>
+        </div>
+
+        <div class="section">
+          <h3>Permissões Efetivas:</h3>
+          <div class="permissions-list" *ngIf="user.effectivePermissions.length > 0">
+            <span *ngFor="let permission of user.effectivePermissions" class="permission-badge">
+              {{ permission }}
+            </span>
+          </div>
+          <p *ngIf="user.effectivePermissions.length === 0" class="text-muted">
+            Nenhuma permissão
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions card -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Ações</h2>
+      </div>
+      <div class="card-body">
+        <div class="actions-group">
+          <button 
+            *ngIf="!user.active && hasPermission('USER_MANAGEMENT')"
+            (click)="activateUser()"
+            class="btn btn-success"
+            [disabled]="actionLoading"
+          >
+            ✓ Ativar Usuário
+          </button>
+
+          <button 
+            *ngIf="user.active && hasPermission('USER_MANAGEMENT')"
+            (click)="deactivateUser()"
+            class="btn btn-danger"
+            [disabled]="actionLoading"
+          >
+            ✕ Desativar Usuário
+          </button>
+
+          <p *ngIf="!user.active && user.roles.length === 0" class="warning-message">
+            ⚠️ Atenção: O usuário precisa ter pelo menos um papel atribuído antes de ser ativado.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Role assignment modal -->
+<div *ngIf="showRoleModal" class="modal-overlay" (click)="closeRoleModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Gerenciar Papéis</h2>
+      <button class="modal-close" (click)="closeRoleModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <p class="modal-description">Selecione os papéis que deseja atribuir ao usuário:</p>
+      
+      <div *ngIf="loadingRoles" class="loading-modal">
+        Carregando papéis...
+      </div>
+
+      <div *ngIf="!loadingRoles" class="roles-selection">
+        <label *ngFor="let role of availableRoles" class="role-checkbox">
+          <input 
+            type="checkbox" 
+            [checked]="isRoleSelected(role.id)"
+            (change)="toggleRole(role.id)"
+          />
+          <div class="role-info">
+            <strong>{{ role.name }}</strong>
+            <p>{{ role.description }}</p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        (click)="closeRoleModal()" 
+        class="btn btn-secondary"
+        [disabled]="actionLoading"
+      >
+        Cancelar
+      </button>
+      <button 
+        (click)="saveRoles()" 
+        class="btn btn-primary"
+        [disabled]="actionLoading || loadingRoles"
+      >
+        {{ actionLoading ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</div>

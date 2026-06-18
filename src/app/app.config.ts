@@ -5,6 +5,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { authInterceptor } from './services/auth.interceptor';
 
 export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
   const clonedRequest = req.clone({
@@ -14,11 +15,11 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 export const appConfig: ApplicationConfig = {
-  providers: [
+  providers:  [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes), 
     provideHttpClient(
-      withInterceptors([credentialsInterceptor])
+      withInterceptors([authInterceptor, credentialsInterceptor])
     ),
     provideClientHydration(withEventReplay())
   ]

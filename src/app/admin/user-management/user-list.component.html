@@ -1,0 +1,112 @@
+<div class="user-management-container">
+  <div class="header">
+    <h1>Gerenciamento de Usuários</h1>
+    <p class="subtitle">Gerencie usuários, permissões e status de ativação</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (keyup.enter)="onSearch()"
+        placeholder="Buscar por nome ou email..."
+        class="search-input"
+      />
+      <button (click)="onSearch()" class="btn btn-primary">
+        Buscar
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label>Status:</label>
+      <select (change)="onFilterActiveChange($any($event.target).value)" class="filter-select">
+        <option value="all">Todos</option>
+        <option value="true">Ativos</option>
+        <option value="false">Inativos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    Carregando usuários...
+  </div>
+
+  <!-- Users table -->
+  <div *ngIf="!loading && users.length > 0" class="users-table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Papéis</th>
+          <th>Data de Criação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span [class]="getUserStatusClass(user.active)" class="status-badge">
+              {{ getUserStatusText(user.active) }}
+            </span>
+          </td>
+          <td>
+            <div class="roles-list">
+              <span *ngFor="let role of user.roleNames" class="role-badge">
+                {{ role }}
+              </span>
+              <span *ngIf="user.roleNames.length === 0" class="text-muted">
+                Sem papéis
+              </span>
+            </div>
+          </td>
+          <td>{{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <a [routerLink]="['/admin/users', user.id]" class="btn btn-sm btn-secondary">
+              Ver Detalhes
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No results -->
+  <div *ngIf="!loading && users.length === 0" class="no-results">
+    <p>Nenhum usuário encontrado</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && totalPages > 1" class="pagination">
+    <button 
+      (click)="previousPage()" 
+      [disabled]="currentPage === 0"
+      class="btn btn-secondary"
+    >
+      Anterior
+    </button>
+    
+    <span class="pagination-info">
+      Página {{ currentPage + 1 }} de {{ totalPages }} ({{ totalItems }} usuários)
+    </span>
+    
+    <button 
+      (click)="nextPage()" 
+      [disabled]="currentPage >= totalPages - 1"
+      class="btn btn-secondary"
+    >
+      Próxima
+    </button>
+  </div>
+</div>

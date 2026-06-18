@@ -22,6 +22,29 @@
           Você está logado no sistema. Esta é a página inicial do painel administrativo.
         </p>
         <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Card de gerenciamento de usuários (apenas para admins) -->
+          <div *hasPermission="'USER_MANAGEMENT'" class="bg-blue-50 overflow-hidden shadow rounded-lg cursor-pointer hover:shadow-lg transition-shadow" routerLink="/admin/users">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 truncate">
+                      Administração
+                    </dt>
+                    <dd class="text-lg font-medium text-gray-900">
+                      Gerenciar Usuários
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Card de exemplo -->
           <div class="bg-indigo-50 overflow-hidden shadow rounded-lg">
             <div class="p-5">
