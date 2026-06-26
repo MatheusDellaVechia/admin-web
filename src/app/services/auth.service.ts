@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../environments/environment.development';
@@ -26,7 +27,10 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<LoginResponse | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: object,
+  ) {
     this.loadStoredUser();
   }
 
@@ -55,10 +59,12 @@ export class AuthService {
   }
 
   getToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
     return localStorage.getItem(this.tokenKey);
   }
 
   getPermissions(): string[] {
+    if (!isPlatformBrowser(this.platformId)) return [];
     const permissions = localStorage.getItem(this.permissionsKey);
     return permissions ? JSON.parse(permissions) : [];
   }
@@ -82,14 +88,18 @@ export class AuthService {
   }
 
   private storeUserData(response: LoginResponse): void {
-    localStorage.setItem(this.tokenKey, response.token);
-    localStorage.setItem(this.permissionsKey, JSON.stringify(response.permissions));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.tokenKey, response.token);
+      localStorage.setItem(this.permissionsKey, JSON.stringify(response.permissions));
+    }
     this.currentUserSubject.next(response);
   }
 
   private clearUserData(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.permissionsKey);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.permissionsKey);
+    }
     this.currentUserSubject.next(null);
   }
 

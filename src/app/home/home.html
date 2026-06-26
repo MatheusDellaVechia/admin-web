@@ -1,74 +1,26 @@
-<div class="min-h-screen bg-gray-100">
-  <!-- Header -->
-  <header class="bg-white shadow">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-gray-900">
-        Dashboard
-      </h1>
-      <button 
-        (click)="logout()"
-        class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-        Sair
-      </button>
+<div class="p-6 space-y-6">
+
+  <!-- Totalizadores de pedidos -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">Pedidos por Status</h2>
+      <a routerLink="/orders" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+        Ver todos os pedidos →
+      </a>
     </div>
-  </header>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Bem-vindo!</h2>
-        <p class="text-gray-600">
-          Você está logado no sistema. Esta é a página inicial do painel administrativo.
-        </p>
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <!-- Card de gerenciamento de usuários (apenas para admins) -->
-          <div *hasPermission="'USER_MANAGEMENT'" class="bg-blue-50 overflow-hidden shadow rounded-lg cursor-pointer hover:shadow-lg transition-shadow" routerLink="/admin/users">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">
-                      Administração
-                    </dt>
-                    <dd class="text-lg font-medium text-gray-900">
-                      Gerenciar Usuários
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card de exemplo -->
-          <div class="bg-indigo-50 overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">
-                      Perfil
-                    </dt>
-                    <dd class="text-lg font-medium text-gray-900">
-                      Configurações
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      @for (status of allStatuses; track status) {
+        <div class="rounded-lg border p-4 text-center" [ngClass]="statusColors[status]">
+          @if (loadingSummary) {
+            <div class="h-8 w-12 bg-current opacity-20 rounded mx-auto mb-2 animate-pulse"></div>
+          } @else {
+            <p class="text-2xl font-bold">{{ getCount(status) }}</p>
+          }
+          <p class="text-xs font-medium mt-1">{{ statusLabels[status] }}</p>
         </div>
-      </div>
+      }
     </div>
-  </main>
+  </div>
+
 </div>

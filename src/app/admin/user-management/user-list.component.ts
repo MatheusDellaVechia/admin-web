@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,8 +17,7 @@ export class UserListComponent implements OnInit {
   pageSize = 10;
   totalItems = 0;
   totalPages = 0;
-  
-  // Filters
+
   searchTerm = '';
   filterActive: boolean | null = null;
   filterRoles: string[] = [];
@@ -26,7 +25,7 @@ export class UserListComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  constructor(private userManagementService: UserManagementService) {}
+  constructor(private userManagementService: UserManagementService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadUsers();
@@ -50,11 +49,13 @@ export class UserListComponent implements OnInit {
         this.totalItems = response.totalItems;
         this.totalPages = response.totalPages;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = 'Erro ao carregar usuários';
         console.error(err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

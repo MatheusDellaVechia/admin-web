@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { 
-  UserManagementService, 
+import {
+  UserManagementService,
   UserDetailsResponse,
   RoleInfo,
   ListRolesResponse
@@ -23,7 +23,7 @@ export class UserDetailsComponent implements OnInit {
   user: UserDetailsResponse | null = null;
   availableRoles: RoleInfo[] = [];
   selectedRoleIds: Set<string> = new Set();
-  
+
   loading = false;
   loadingRoles = false;
   actionLoading = false;
@@ -36,7 +36,8 @@ export class UserDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private userManagementService: UserManagementService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -56,11 +57,13 @@ export class UserDetailsComponent implements OnInit {
         this.user = user;
         this.selectedRoleIds = new Set(user.roles.map(r => r.id));
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = 'Erro ao carregar detalhes do usuário';
         console.error(err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -72,10 +75,12 @@ export class UserDetailsComponent implements OnInit {
       next: (response: ListRolesResponse) => {
         this.availableRoles = response.roles;
         this.loadingRoles = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erro ao carregar papéis', err);
         this.loadingRoles = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -95,13 +100,15 @@ export class UserDetailsComponent implements OnInit {
       next: () => {
         this.successMessage = 'Usuário ativado com sucesso!';
         this.actionLoading = false;
+        this.cdr.detectChanges();
         this.loadUserDetails();
-        setTimeout(() => this.successMessage = null, 3000);
+        setTimeout(() => { this.successMessage = null; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
         this.error = err.error?.message || 'Erro ao ativar usuário. Certifique-se de que o usuário tem pelo menos um papel atribuído.';
         console.error(err);
         this.actionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -121,13 +128,15 @@ export class UserDetailsComponent implements OnInit {
       next: () => {
         this.successMessage = 'Usuário desativado com sucesso!';
         this.actionLoading = false;
+        this.cdr.detectChanges();
         this.loadUserDetails();
-        setTimeout(() => this.successMessage = null, 3000);
+        setTimeout(() => { this.successMessage = null; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
         this.error = err.error?.message || 'Erro ao desativar usuário';
         console.error(err);
         this.actionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -167,13 +176,15 @@ export class UserDetailsComponent implements OnInit {
         this.successMessage = 'Papéis atualizados com sucesso!';
         this.actionLoading = false;
         this.showRoleModal = false;
+        this.cdr.detectChanges();
         this.loadUserDetails();
-        setTimeout(() => this.successMessage = null, 3000);
+        setTimeout(() => { this.successMessage = null; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
         this.error = 'Erro ao atualizar papéis';
         console.error(err);
         this.actionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

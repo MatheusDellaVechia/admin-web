@@ -1,170 +1,185 @@
-<div class="user-details-container">
-  <div class="header">
-    <a routerLink="/admin/users" class="back-link">← Voltar para lista</a>
-    <h1>Detalhes do Usuário</h1>
+<div class="p-6 max-w-3xl space-y-6">
+
+  <!-- Page title with back link -->
+  <div class="flex items-center gap-3">
+    <a routerLink="/admin/users" class="text-gray-400 hover:text-gray-600">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </a>
+    <h1 class="text-2xl font-bold text-gray-900">Detalhes do Usuário</h1>
   </div>
 
   <!-- Success message -->
-  <div *ngIf="successMessage" class="success-message">
-    {{ successMessage }}
-  </div>
+  @if (successMessage) {
+    <div class="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg p-3">{{ successMessage }}</div>
+  }
 
   <!-- Error message -->
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg p-3">{{ error }}</div>
+  }
 
   <!-- Loading -->
-  <div *ngIf="loading" class="loading">
-    Carregando detalhes do usuário...
-  </div>
+  @if (loading) {
+    <div class="text-center py-10 text-gray-500">Carregando detalhes do usuário...</div>
+  }
 
-  <!-- User details -->
-  <div *ngIf="!loading && user" class="user-details-content">
-    <!-- User info card -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Informações Básicas</h2>
-        <span [class]="getUserStatusClass(user.active)" class="status-badge-large">
-          {{ getUserStatusText(user.active) }}
+  @if (!loading && user) {
+
+    <!-- Basic info card -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Informações Básicas</h2>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+          [class]="user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+          {{ user.active ? 'Ativo' : 'Inativo' }}
         </span>
       </div>
-      <div class="card-body">
-        <div class="info-row">
-          <span class="info-label">Nome:</span>
-          <span class="info-value">{{ user.name }}</span>
+      <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <dt class="text-xs font-medium text-gray-500">Nome</dt>
+          <dd class="mt-1 text-sm text-gray-900">{{ user.name }}</dd>
         </div>
-        <div class="info-row">
-          <span class="info-label">Email:</span>
-          <span class="info-value">{{ user.email }}</span>
+        <div>
+          <dt class="text-xs font-medium text-gray-500">E-mail</dt>
+          <dd class="mt-1 text-sm text-gray-900">{{ user.email }}</dd>
         </div>
-        <div class="info-row">
-          <span class="info-label">Data de Criação:</span>
-          <span class="info-value">{{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        <div>
+          <dt class="text-xs font-medium text-gray-500">Data de Criação</dt>
+          <dd class="mt-1 text-sm text-gray-900">{{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd>
         </div>
-      </div>
+      </dl>
     </div>
 
     <!-- Roles card -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Papéis e Permissões</h2>
-        <button 
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Papéis e Permissões</h2>
+        <button
           *hasPermission="'ROLE_ASSIGNMENT'"
-          (click)="openRoleModal()" 
-          class="btn btn-primary btn-sm"
+          (click)="openRoleModal()"
           [disabled]="actionLoading"
-        >
+          class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           Gerenciar Papéis
         </button>
       </div>
-      <div class="card-body">
-        <div class="section">
-          <h3>Papéis Atribuídos:</h3>
-          <div class="roles-list" *ngIf="user.roles.length > 0">
-            <div *ngFor="let role of user.roles" class="role-item">
-              <strong>{{ role.name }}</strong>
-              <p class="role-description">{{ role.description }}</p>
+
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Papéis Atribuídos</h3>
+          @if (user.roles.length > 0) {
+            <div class="space-y-2">
+              @for (role of user.roles; track role.id) {
+                <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ role.name }}</p>
+                    <p class="text-xs text-gray-500">{{ role.description }}</p>
+                  </div>
+                </div>
+              }
             </div>
-          </div>
-          <p *ngIf="user.roles.length === 0" class="text-muted">
-            Nenhum papel atribuído
-          </p>
+          } @else {
+            <p class="text-sm text-gray-400 italic">Nenhum papel atribuído</p>
+          }
         </div>
 
-        <div class="section">
-          <h3>Permissões Efetivas:</h3>
-          <div class="permissions-list" *ngIf="user.effectivePermissions.length > 0">
-            <span *ngFor="let permission of user.effectivePermissions" class="permission-badge">
-              {{ permission }}
-            </span>
-          </div>
-          <p *ngIf="user.effectivePermissions.length === 0" class="text-muted">
-            Nenhuma permissão
-          </p>
+        <div>
+          <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Permissões Efetivas</h3>
+          @if (user.effectivePermissions.length > 0) {
+            <div class="flex flex-wrap gap-1.5">
+              @for (permission of user.effectivePermissions; track permission) {
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                  {{ permission }}
+                </span>
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-gray-400 italic">Nenhuma permissão</p>
+          }
         </div>
       </div>
     </div>
 
     <!-- Actions card -->
-    <div class="card">
-      <div class="card-header">
-        <h2>Ações</h2>
-      </div>
-      <div class="card-body">
-        <div class="actions-group">
-          <button 
-            *ngIf="!user.active && hasPermission('USER_MANAGEMENT')"
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Ações</h2>
+      <div class="flex flex-wrap gap-3">
+        @if (!user.active && hasPermission('USER_MANAGEMENT')) {
+          <button
             (click)="activateUser()"
-            class="btn btn-success"
             [disabled]="actionLoading"
-          >
-            ✓ Ativar Usuário
+            class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+            @if (actionLoading) { Processando... } @else { Ativar Usuário }
           </button>
-
-          <button 
-            *ngIf="user.active && hasPermission('USER_MANAGEMENT')"
+        }
+        @if (user.active && hasPermission('USER_MANAGEMENT')) {
+          <button
             (click)="deactivateUser()"
-            class="btn btn-danger"
             [disabled]="actionLoading"
-          >
-            ✕ Desativar Usuário
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+            @if (actionLoading) { Processando... } @else { Desativar Usuário }
           </button>
-
-          <p *ngIf="!user.active && user.roles.length === 0" class="warning-message">
-            ⚠️ Atenção: O usuário precisa ter pelo menos um papel atribuído antes de ser ativado.
+        }
+        @if (!user.active && user.roles.length === 0) {
+          <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+            Atenção: O usuário precisa ter pelo menos um papel atribuído antes de ser ativado.
           </p>
-        </div>
+        }
       </div>
     </div>
-  </div>
+
+  }
 </div>
 
 <!-- Role assignment modal -->
-<div *ngIf="showRoleModal" class="modal-overlay" (click)="closeRoleModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Gerenciar Papéis</h2>
-      <button class="modal-close" (click)="closeRoleModal()">✕</button>
-    </div>
-    
-    <div class="modal-body">
-      <p class="modal-description">Selecione os papéis que deseja atribuir ao usuário:</p>
-      
-      <div *ngIf="loadingRoles" class="loading-modal">
-        Carregando papéis...
+@if (showRoleModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeRoleModal()">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Gerenciar Papéis</h2>
+        <button (click)="closeRoleModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
-      <div *ngIf="!loadingRoles" class="roles-selection">
-        <label *ngFor="let role of availableRoles" class="role-checkbox">
-          <input 
-            type="checkbox" 
-            [checked]="isRoleSelected(role.id)"
-            (change)="toggleRole(role.id)"
-          />
-          <div class="role-info">
-            <strong>{{ role.name }}</strong>
-            <p>{{ role.description }}</p>
-          </div>
-        </label>
+      <div class="px-6 py-4 space-y-3 max-h-80 overflow-y-auto">
+        <p class="text-sm text-gray-500">Selecione os papéis que deseja atribuir ao usuário:</p>
+        @if (loadingRoles) {
+          <div class="text-center py-4 text-gray-500 text-sm">Carregando papéis...</div>
+        } @else {
+          @for (role of availableRoles; track role.id) {
+            <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <input
+                type="checkbox"
+                [checked]="isRoleSelected(role.id)"
+                (change)="toggleRole(role.id)"
+                class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ role.name }}</p>
+                <p class="text-xs text-gray-500">{{ role.description }}</p>
+              </div>
+            </label>
+          }
+        }
       </div>
-    </div>
 
-    <div class="modal-footer">
-      <button 
-        (click)="closeRoleModal()" 
-        class="btn btn-secondary"
-        [disabled]="actionLoading"
-      >
-        Cancelar
-      </button>
-      <button 
-        (click)="saveRoles()" 
-        class="btn btn-primary"
-        [disabled]="actionLoading || loadingRoles"
-      >
-        {{ actionLoading ? 'Salvando...' : 'Salvar' }}
-      </button>
+      <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+        <button
+          (click)="closeRoleModal()"
+          [disabled]="actionLoading"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+          Cancelar
+        </button>
+        <button
+          (click)="saveRoles()"
+          [disabled]="actionLoading || loadingRoles"
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50">
+          @if (actionLoading) { Salvando... } @else { Salvar }
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

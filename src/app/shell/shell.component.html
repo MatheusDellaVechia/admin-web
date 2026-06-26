@@ -1,0 +1,142 @@
+<!-- Mobile backdrop -->
+@if (isMobileOpen) {
+  <div
+    class="fixed inset-0 z-20 bg-black/40 lg:hidden"
+    (click)="closeMobile()">
+  </div>
+}
+
+<div class="flex h-screen bg-gray-100 overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside
+    class="sidebar"
+    [class.sidebar--collapsed]="isCollapsed"
+    [class.sidebar--mobile-open]="isMobileOpen">
+
+    <!-- Logo / branding -->
+    <div class="sidebar__brand">
+      @if (!isCollapsed) {
+        <span class="sidebar__brand-text">Admin</span>
+      } @else {
+        <span class="sidebar__brand-icon">A</span>
+      }
+    </div>
+
+    <!-- Nav items -->
+    <nav class="sidebar__nav">
+
+      <a
+        routerLink="/home"
+        routerLinkActive="sidebar__nav-item--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="sidebar__nav-item"
+        (click)="closeMobile()">
+        <svg class="sidebar__nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        @if (!isCollapsed) {
+          <span class="sidebar__nav-label">Dashboard</span>
+        }
+      </a>
+
+      <a
+        *hasPermission="'ORDER_MANAGEMENT'"
+        routerLink="/orders"
+        routerLinkActive="sidebar__nav-item--active"
+        class="sidebar__nav-item"
+        (click)="closeMobile()">
+        <svg class="sidebar__nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        @if (!isCollapsed) {
+          <span class="sidebar__nav-label">Pedidos</span>
+        }
+      </a>
+
+      <a
+        *hasPermission="'USER_MANAGEMENT'"
+        routerLink="/admin/users"
+        routerLinkActive="sidebar__nav-item--active"
+        class="sidebar__nav-item"
+        (click)="closeMobile()">
+        <svg class="sidebar__nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        @if (!isCollapsed) {
+          <span class="sidebar__nav-label">Usuários</span>
+        }
+      </a>
+
+      <a
+        *hasPermission="'USER_MANAGEMENT'"
+        routerLink="/admin/logs"
+        routerLinkActive="sidebar__nav-item--active"
+        class="sidebar__nav-item"
+        (click)="closeMobile()">
+        <svg class="sidebar__nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        @if (!isCollapsed) {
+          <span class="sidebar__nav-label">Logs</span>
+        }
+      </a>
+
+    </nav>
+
+    <!-- Sidebar footer: user + logout -->
+    <div class="sidebar__footer">
+      @if (!isCollapsed) {
+        <div class="sidebar__user">
+          <span class="sidebar__user-name">{{ userName }}</span>
+        </div>
+      }
+      <button class="sidebar__logout" (click)="logout()" title="Sair">
+        <svg class="sidebar__nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        @if (!isCollapsed) {
+          <span class="sidebar__nav-label">Sair</span>
+        }
+      </button>
+    </div>
+
+    <!-- Collapse toggle (desktop only) -->
+    <button
+      class="sidebar__collapse-btn"
+      (click)="toggleCollapse()"
+      [title]="isCollapsed ? 'Expandir' : 'Recolher'">
+      <svg class="h-4 w-4 transition-transform duration-200"
+        [class.rotate-180]="isCollapsed"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+      </svg>
+    </button>
+
+  </aside>
+
+  <!-- Main area -->
+  <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+
+    <!-- Top bar (mobile only) -->
+    <header class="topbar lg:hidden">
+      <button class="topbar__menu-btn" (click)="toggleMobile()">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <span class="topbar__title">Admin</span>
+    </header>
+
+    <!-- Page content -->
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet />
+    </main>
+
+  </div>
+</div>

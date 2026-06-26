@@ -26,7 +26,7 @@ export const permissionGuard: CanActivateFn = (route, state) => {
     : authService.hasAnyPermission(data.permissions);
 
   if (!hasPermission) {
-    router.navigate(['/']);
+    router.navigate(['/home']);
     return false;
   }
 

@@ -1,51 +1,74 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { HasPermissionDirective } from '../directives/has-permission.directive';
+import { DashboardService } from '../services/dashboard.service';
+import { DashboardSummary } from '../models/dashboard.model';
+import { OrderStatus } from '../models/order.model';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, HasPermissionDirective],
+  imports: [NgClass, RouterModule],
   templateUrl: './home.html',
-  styleUrl: './home.css'
+  styleUrl: './home.css',
 })
 export class HomeComponent implements OnInit {
-  userName = '';
+  summary: DashboardSummary = {
+    ordersByStatus: {
+      [OrderStatus.AGUARDANDO_PAGAMENTO]: 0,
+      [OrderStatus.PAGO]: 0,
+      [OrderStatus.EM_TRANSPORTE]: 0,
+      [OrderStatus.CONCLUIDO]: 0,
+      [OrderStatus.CANCELADO]: 0,
+    },
+  };
+  loadingSummary = false;
+
+  readonly statusLabels: Record<OrderStatus, string> = {
+    [OrderStatus.AGUARDANDO_PAGAMENTO]: 'Aguardando Pagamento',
+    [OrderStatus.PAGO]: 'Pago',
+    [OrderStatus.EM_TRANSPORTE]: 'Em Transporte',
+    [OrderStatus.CONCLUIDO]: 'Concluído',
+    [OrderStatus.CANCELADO]: 'Cancelado',
+  };
+
+  readonly statusColors: Record<OrderStatus, string> = {
+    [OrderStatus.AGUARDANDO_PAGAMENTO]: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    [OrderStatus.PAGO]: 'bg-green-50 text-green-700 border-green-200',
+    [OrderStatus.EM_TRANSPORTE]: 'bg-blue-50 text-blue-700 border-blue-200',
+    [OrderStatus.CONCLUIDO]: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    [OrderStatus.CANCELADO]: 'bg-red-50 text-red-700 border-red-200',
+  };
+
+  readonly allStatuses = Object.values(OrderStatus);
 
   constructor(
-    private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private dashboardService: DashboardService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    
-    try {
-      const user = JSON.parse(userStr);
-      this.userName = user.name || '';
-    } catch (error) {
-      console.error('Erro ao ler dados do usuário:', error);
-      this.router.navigate(['/login']);
-    }
+    this.loadSummary();
   }
 
-  logout() {
-    this.authService.logout().subscribe({
-      next: () => {
-        localStorage.removeItem('user');
-        this.router.navigate(['/login']);
+  loadSummary() {
+    this.loadingSummary = true;
+    this.dashboardService.getSummary().subscribe({
+      next: (data) => {
+        this.summary = data;
+        this.loadingSummary = false;
+        this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Erro ao fazer logout:', error);
-        localStorage.removeItem('user');
-        this.router.navigate(['/login']);
-      }
+      error: () => {
+        this.loadingSummary = false;
+        this.cdr.detectChanges();
+      },
     });
+  }
+
+  getCount(status: OrderStatus): number {
+    return this.summary.ordersByStatus[status] ?? 0;
   }
 }
