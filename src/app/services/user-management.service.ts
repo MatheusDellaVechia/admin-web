@@ -96,6 +96,6 @@ export class UserManagementService {
   }
 
   listRoles(): Observable<ListRolesResponse> {
-    return this.http.get<ListRolesResponse>(`${this.apiUrl}/roles`);
+    return this.http.get<ListRolesResponse>(`${this.apiUrl}/users/roles`);
   }
 }

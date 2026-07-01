@@ -41,14 +41,8 @@ export class LoginComponent {
       };
 
       this.authService.login(credentials).subscribe({
-        next: (response) => {
+        next: () => {
           this.isLoading = false;
-
-          localStorage.setItem('user', JSON.stringify({
-            email: response.email,
-            name: response.name
-          }));
-          
           this.cdr.detectChanges();
           
           setTimeout(() => {
@@ -57,7 +51,7 @@ export class LoginComponent {
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
+          this.errorMessage = error.error?.error || 'Erro ao fazer login. Verifique suas credenciais.';
           console.error('Erro no login:', error);
           this.cdr.detectChanges();
         }

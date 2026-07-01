@@ -22,7 +22,7 @@ export class AttachmentService {
     return this.http.post<Attachment>(`${this.apiUrl}/${orderId}/attachments`, formData);
   }
 
-  getDownloadUrl(orderId: string, fileId: string): string {
-    return `${environment.API_URL}/api/admin/orders/${orderId}/attachments/${fileId}`;
+  downloadFile(orderId: string, fileId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${orderId}/attachments/${fileId}`, { responseType: 'blob' });
   }
 }

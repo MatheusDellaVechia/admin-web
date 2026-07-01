@@ -31,12 +31,19 @@ export class OrderDetailComponent implements OnInit {
   statusError: string | null = null;
   uploadError: string | null = null;
   uploadSuccess: string | null = null;
+  downloadError: string | null = null;
+  downloadingId: string | null = null;
 
   selectedStatus: OrderStatus | '' = '';
   showConfirm = false;
+  attachmentRequiredError: string | null = null;
 
   get selectedStatusLabel(): string {
     return this.selectedStatus ? this.statusLabels[this.selectedStatus] : '';
+  }
+
+  get hasPdfAttachment(): boolean {
+    return this.attachments.some((a) => a.contentType === 'application/pdf');
   }
 
   readonly allStatuses = Object.values(OrderStatus);
@@ -99,6 +106,15 @@ export class OrderDetailComponent implements OnInit {
 
   onStatusChange(status: string) {
     this.selectedStatus = status as OrderStatus;
+    this.attachmentRequiredError = null;
+
+    if (status === OrderStatus.EM_TRANSPORTE && !this.hasPdfAttachment) {
+      this.attachmentRequiredError =
+        'É necessário anexar a nota fiscal (PDF) antes de mover o pedido para Em Transporte.';
+      this.showConfirm = false;
+      return;
+    }
+
     this.showConfirm = status !== '' && status !== this.order?.status;
   }
 
@@ -150,6 +166,12 @@ export class OrderDetailComponent implements OnInit {
         this.uploadingFile = false;
         this.uploadSuccess = 'Arquivo anexado com sucesso.';
         input.value = '';
+
+        if (this.selectedStatus === OrderStatus.EM_TRANSPORTE && this.attachmentRequiredError && this.hasPdfAttachment) {
+          this.attachmentRequiredError = null;
+          this.showConfirm = this.selectedStatus !== this.order?.status;
+        }
+
         this.cdr.detectChanges();
         setTimeout(() => { this.uploadSuccess = null; this.cdr.detectChanges(); }, 4000);
       },
@@ -163,15 +185,30 @@ export class OrderDetailComponent implements OnInit {
   }
 
   downloadAttachment(attachment: Attachment) {
-    const url = this.attachmentService.getDownloadUrl(this.order!.id, attachment.id);
-    if (attachment.contentType === 'application/pdf') {
-      window.open(url, '_blank');
-    } else {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = attachment.filename;
-      a.click();
-    }
+    this.downloadError = null;
+    this.downloadingId = attachment.id;
+    this.attachmentService.downloadFile(this.order!.id, attachment.id).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        if (attachment.contentType === 'application/pdf') {
+          window.open(objectUrl, '_blank');
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+        } else {
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          a.download = attachment.filename;
+          a.click();
+          URL.revokeObjectURL(objectUrl);
+        }
+        this.downloadingId = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.downloadError = 'Erro ao baixar o anexo. Tente novamente.';
+        this.downloadingId = null;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   formatDate(dateStr: string): string {

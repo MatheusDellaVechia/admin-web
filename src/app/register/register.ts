@@ -58,7 +58,7 @@ export class RegisterComponent {
         },
         error: (error) => {
           console.error('Failed to send verification code:', error);
-          this.errorMessage = error.error?.message || 'Erro ao enviar código de verificação. Tente novamente.';
+          this.errorMessage = error.error?.error || 'Erro ao enviar código de verificação. Tente novamente.';
           this.isSubmitting = false;
           this.cdr.detectChanges();
         }
@@ -87,7 +87,7 @@ export class RegisterComponent {
         },
         error: (error) => {
           console.error('Invalid verification code:', error);
-          this.errorMessage = error.error?.message || 'Código de verificação inválido.';
+          this.errorMessage = error.error?.error || 'Código de verificação inválido.';
           this.isSubmitting = false;
           this.cdr.detectChanges();
         }
@@ -128,7 +128,7 @@ export class RegisterComponent {
         },
         error: (error) => {
           console.error('Registration failed:', error);
-          this.errorMessage = error.error?.message || 'Erro ao realizar o cadastro. Tente novamente mais tarde.';
+          this.errorMessage = error.error?.error || 'Erro ao realizar o cadastro. Tente novamente mais tarde.';
           this.isSubmitting = false;
           this.cdr.detectChanges();
         }

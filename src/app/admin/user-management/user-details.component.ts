@@ -105,7 +105,7 @@ export class UserDetailsComponent implements OnInit {
         setTimeout(() => { this.successMessage = null; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        this.error = err.error?.message || 'Erro ao ativar usuário. Certifique-se de que o usuário tem pelo menos um papel atribuído.';
+        this.error = err.error?.error || 'Erro ao ativar usuário. Certifique-se de que o usuário tem pelo menos um papel atribuído.';
         console.error(err);
         this.actionLoading = false;
         this.cdr.detectChanges();
@@ -133,7 +133,7 @@ export class UserDetailsComponent implements OnInit {
         setTimeout(() => { this.successMessage = null; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        this.error = err.error?.message || 'Erro ao desativar usuário';
+        this.error = err.error?.error || 'Erro ao desativar usuário';
         console.error(err);
         this.actionLoading = false;
         this.cdr.detectChanges();
